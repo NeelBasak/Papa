@@ -1,0 +1,117 @@
+import streamlit as st
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.stats import norm, probplot
+
+st.set_page_config(page_title="Process Capability App", layout="centered")
+st.title("📊 Process Capability Analysis")
+st.write("Upload a CSV or Excel file containing numeric data.")
+
+uploaded_file = st.file_uploader("Upload file", type=["csv", "xlsx"])
+
+if uploaded_file is not None:
+
+    # ---- Read file ----
+    if uploaded_file.name.endswith(".csv"):
+        df = pd.read_csv(uploaded_file, header=None)
+    else:
+        df = pd.read_excel(uploaded_file, header=None)
+
+    numeric = pd.to_numeric(df.values.flatten(), errors="coerce")
+    data = numeric[~np.isnan(numeric)]
+
+    if len(data) < 25:
+        st.error("At least 25 data points are required.")
+        st.stop()
+
+    # ---- User inputs (dad-friendly sliders) ----
+    st.sidebar.header("Specifications")
+    USL = st.sidebar.number_input("USL", value=8.35)
+    LSL = st.sidebar.number_input("LSL", value=6.92)
+
+    subgroup_size = 5
+    D2 = 2.33
+
+    # ----- Subgroup calculations -----
+    n_subgroups = len(data) // subgroup_size
+    subgroups = data[: n_subgroups * subgroup_size].reshape(n_subgroups, subgroup_size)
+
+    xbar = subgroups.mean(axis=1)
+    R = subgroups.max(axis=1) - subgroups.min(axis=1)
+
+    R_bar = R.mean()
+    sigma_within = R_bar / D2
+    sigma_overall = data.std(ddof=0)
+    mu = data.mean()
+
+    # ----- 1. Individual Plot -----
+    st.subheader("Individual Values (Last 25 Samples)")
+    fig, ax = plt.subplots()
+    ax.plot(range(1, 26), data[-25:], marker="o")
+    ax.axhline(mu, linestyle="--")
+    ax.set_xlabel("Sample")
+    ax.set_ylabel("Values")
+    st.pyplot(fig)
+
+    # ----- 2. Xbar Chart -----
+    st.subheader("X̄ Chart")
+    fig, ax = plt.subplots()
+    sigma_xbar = sigma_within / np.sqrt(subgroup_size)
+    center_line = xbar.mean()
+    UCL_xbar = center_line + 3 * sigma_xbar
+    LCL_xbar = center_line - 3 * sigma_xbar
+
+    ax.plot(xbar, marker="o")
+    ax.axhline(center_line)
+    ax.axhline(UCL_xbar)
+    ax.axhline(LCL_xbar)
+    ax.set_xlabel("Subgroup")
+    ax.set_ylabel("X̄")
+    st.pyplot(fig)
+
+    # ----- 3. R Chart -----
+    st.subheader("R Chart")
+    fig, ax = plt.subplots()
+    ax.plot(R, marker="o")
+    ax.axhline(R_bar)
+    ax.axhline(R_bar * 4.918)  # D4
+    ax.axhline(0)
+    ax.set_xlabel("Subgroup")
+    ax.set_ylabel("Range")
+    st.pyplot(fig)
+
+    # ----- 4. Histogram -----
+    st.subheader("Capability Histogram")
+    fig, ax = plt.subplots()
+    count, bins, _ = ax.hist(data, bins=12, density=True)
+
+    x = np.linspace(min(bins), max(bins), 200)
+    ax.plot(x, norm.pdf(x, mu, sigma_overall))
+    ax.plot(x, norm.pdf(x, mu, sigma_within), linestyle="--")
+
+    ax.axvline(LSL, linestyle=":")
+    ax.axvline(USL, linestyle=":")
+    st.pyplot(fig)
+
+    # ----- 5. Normal Probability Plot -----
+    st.subheader("Normal Probability Plot")
+    fig = plt.figure()
+    probplot(data, dist="norm", plot=plt)
+    st.pyplot(fig)
+
+    # ----- 6. Capability Indices -----
+    Cp = (USL - LSL) / (6 * sigma_within)
+    Cpk = min((USL - mu) / (3 * sigma_within), (mu - LSL) / (3 * sigma_within))
+    Pp = (USL - LSL) / (6 * sigma_overall)
+    Ppk = min((USL - mu) / (3 * sigma_overall), (mu - LSL) / (3 * sigma_overall))
+    PPM = (
+        1 - norm.cdf(USL, mu, sigma_overall) + norm.cdf(LSL, mu, sigma_overall)
+    ) * 1e6
+
+    st.subheader("Process Capability Indices")
+    st.write(f"**Cp (Within):** {Cp:.3f}")
+    st.write(f"**Cpk (Within):** {Cpk:.3f}")
+    st.write(f"**Pp (Overall):** {Pp:.3f}")
+    st.write(f"**Ppk (Overall):** {Ppk:.3f}")
+    st.write(f"**PPM (Overall):** {PPM:.2f}")
