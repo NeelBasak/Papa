@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import norm, probplot
 
 st.set_page_config(page_title="Process Capability App", layout="centered")
-st.title("📊 Process Capability Analysis")
+st.title("📊 Process Capability Analysiss")
 st.write("Upload a CSV or Excel file containing numeric data.")
 
 uploaded_file = st.file_uploader("Upload file", type=["csv", "xlsx"])
