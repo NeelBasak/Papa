@@ -113,9 +113,6 @@ if uploaded_file is not None:
 
     st.pyplot(fig)
 
-    # ----- Xbar Chart Test Results -----
-    st.markdown("### Test Results for X̄ Chart of C1")
-
     # Test 1: One point beyond 3 sigma (UCL/LCL)
     xbar_failed_points = (idx[out_of_control] + 1).tolist()  # +1 for 1-based indexing
 
@@ -212,6 +209,9 @@ if uploaded_file is not None:
     st.write(f"**PPM (Overall):** {PPM:.2f}")
 
     # Test Results
+
+    # ----- Xbar Chart Test Results -----
+    st.markdown("### Test Results for X̄ Chart of C1")
     if xbar_failed_points:
         st.info(
             f"""
