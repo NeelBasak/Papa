@@ -332,11 +332,11 @@ if uploaded_file is not None:
     # ----- Capability Plot -----
     st.subheader("Capability Plot")
 
-    fig, ax = plt.subplots(figsize=(9, 5))
+    fig, ax = plt.subplots(figsize=(10, 5))
 
-    # Y positions for the three bars
-    y_overall = 3
-    y_within = 2
+    # Vertical positions (extra spacing for clarity)
+    y_overall = 4
+    y_within = 2.5
     y_specs = 1
 
     # ----- OVERALL -----
@@ -355,23 +355,26 @@ if uploaded_file is not None:
         y_within + 0.15,
     )
 
-    # ----- SPECS -----
-    ax.hlines(y_specs, LSL, USL, linewidth=2)
-    ax.vlines([LSL, USL], y_specs - 0.15, y_specs + 0.15)
+    # ----- SPECS (lighter style) -----
+    ax.hlines(y_specs, LSL, USL, linewidth=1.5, color="gray")
+    ax.vlines([LSL, USL], y_specs - 0.12, y_specs + 0.12, color="gray")
 
-    # Labels
+    # Y-axis labels
     ax.set_yticks([y_overall, y_within, y_specs])
     ax.set_yticklabels(["Overall", "Within", "Specs"])
 
+    # Axis formatting
     ax.set_xlabel("Value")
     ax.set_title("Capability Plot")
 
-    # Limits
     xmin = min(LSL, mu - 3 * sigma_overall) - 0.1
     xmax = max(USL, mu + 3 * sigma_overall) + 0.1
     ax.set_xlim(xmin, xmax)
 
     ax.grid(axis="x", alpha=0.3)
+
+    # Reserve margins for side text
+    plt.subplots_adjust(left=0.22, right=0.78)
 
     # ----- Left-side stats (Within) -----
     left_text = (
@@ -382,7 +385,9 @@ if uploaded_file is not None:
         f"PPM     {PPM:.2f}"
     )
 
-    ax.text(xmin, y_within, left_text, va="center", ha="left", fontsize=9)
+    ax.text(
+        0.02, 0.5, left_text, transform=ax.transAxes, va="center", ha="left", fontsize=9
+    )
 
     # ----- Right-side stats (Overall) -----
     right_text = (
@@ -394,6 +399,14 @@ if uploaded_file is not None:
         f"PPM     {PPM:.2f}"
     )
 
-    ax.text(xmax, y_within, right_text, va="center", ha="right", fontsize=9)
+    ax.text(
+        0.98,
+        0.5,
+        right_text,
+        transform=ax.transAxes,
+        va="center",
+        ha="right",
+        fontsize=9,
+    )
 
     st.pyplot(fig)
