@@ -162,7 +162,7 @@ if uploaded_file is not None:
 
     # Layout
     ax.set_xlabel("Subgroup")
-    ax.set_ylabel("Range")
+    ax.set_ylabel("Sample Range")
     ax.set_xlim(-0.5, len(R_vals) + 3)
     ax.grid(alpha=0.3)
 
@@ -170,6 +170,24 @@ if uploaded_file is not None:
 
     # Store R-chart test failures (1-based indexing)
     r_failed_points = (idx_R[out_of_control_R] + 1).tolist()
+
+    # ----- Last 25 Subgroups (X̄ vs Subgroup) -----
+    st.subheader("Last 25 Subgroups (X̄)")
+
+    n_show = min(25, len(xbar))
+    last_xbar = xbar[-n_show:]
+    subgroup_idx = np.arange(len(xbar) - n_show + 1, len(xbar) + 1)
+
+    fig, ax = plt.subplots(figsize=(9, 4))
+
+    ax.plot(subgroup_idx, last_xbar, marker="o", linewidth=2)
+    ax.axhline(center_line, linestyle="--", linewidth=1.5)
+
+    ax.set_xlabel("Subgroup")
+    ax.set_ylabel("Subgroup Mean (X̄)")
+    ax.grid(alpha=0.3)
+
+    st.pyplot(fig)
 
     # ----- 5. Normal Probability Plot -----
     st.subheader("Normal Probability Plot")
