@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import norm, probplot
+from statsmodels.stats.diagnostic import normal_ad
+
 
 st.set_page_config(page_title="Process Capability App", layout="centered")
 st.title("📊 Process Capability Analysis")
@@ -194,7 +196,7 @@ if uploaded_file is not None:
 
     st.pyplot(fig)
 
-    # ----- 4. Capability Histogram (Minitab-style) -----
+    # ----- 4. Capability Histogram -----
     st.subheader("Capability Histogram")
 
     fig, ax = plt.subplots(figsize=(9, 5))
@@ -260,25 +262,26 @@ if uploaded_file is not None:
 
     # ----- 5. Normal Probability Plot -----
     st.subheader("Normal Probability Plot")
-    fig = plt.figure()
-    probplot(data, dist="norm", plot=plt)
+
+    # Anderson-Darling normality test
+    ad_stat, p_value = normal_ad(data)
+
+    fig, ax = plt.subplots(figsize=(9, 5))
+
+    # Probability plot
+    (osm, osr), (slope, intercept, r) = probplot(data, dist="norm")
+
+    ax.scatter(osr, osm, s=40)
+    ax.plot(osr, slope * osr + intercept, color="brown", linewidth=2)
+
+    # Titles like Minitab
+    ax.set_title(f"Normal Prob Plot\nAD: {ad_stat:.3f}, P: {p_value:.3f}", fontsize=12)
+
+    ax.set_xlabel("Data")
+    ax.set_ylabel("Normal Score")
+    ax.grid(alpha=0.3)
+
     st.pyplot(fig)
-
-    # ----- 6. Capability Indices -----
-    Cp = (USL - LSL) / (6 * sigma_within)
-    Cpk = min((USL - mu) / (3 * sigma_within), (mu - LSL) / (3 * sigma_within))
-    Pp = (USL - LSL) / (6 * sigma_overall)
-    Ppk = min((USL - mu) / (3 * sigma_overall), (mu - LSL) / (3 * sigma_overall))
-    PPM = (
-        1 - norm.cdf(USL, mu, sigma_overall) + norm.cdf(LSL, mu, sigma_overall)
-    ) * 1e6
-
-    st.subheader("Process Capability Indices")
-    st.write(f"**Cp (Within):** {Cp:.3f}")
-    st.write(f"**Cpk (Within):** {Cpk:.3f}")
-    st.write(f"**Pp (Overall):** {Pp:.3f}")
-    st.write(f"**Ppk (Overall):** {Ppk:.3f}")
-    st.write(f"**PPM (Overall):** {PPM:.2f}")
 
     # Test Results
 
