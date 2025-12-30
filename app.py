@@ -54,10 +54,10 @@ if uploaded_file is not None:
     # ax.set_ylabel("Values")
     # st.pyplot(fig)
 
-    # ----- Xbar Chart with Spec Limits -----
+    # ----- Xbar Chart -----
     st.subheader("X̄ Chart")
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(9, 5))
 
     sigma_xbar = sigma_within / np.sqrt(subgroup_size)
     center_line = xbar.mean()
@@ -66,29 +66,34 @@ if uploaded_file is not None:
     LCL_xbar = center_line - 3 * sigma_xbar
 
     # Plot Xbar points
-    ax.plot(xbar, marker="o", linestyle="-", label="X̄")
+    ax.plot(xbar, marker="o", linewidth=2, label="X̄")
 
     # Control limits
-    ax.axhline(center_line, linestyle="--", label="CL")
-    ax.axhline(UCL_xbar, linestyle="--", label="UCL")
-    ax.axhline(LCL_xbar, linestyle="--", label="LCL")
+    ax.axhline(center_line, linestyle="--", linewidth=1.5, label="CL")
+    ax.axhline(UCL_xbar, linestyle="--", linewidth=1.5, label="UCL")
+    ax.axhline(LCL_xbar, linestyle="--", linewidth=1.5, label="LCL")
 
     # Spec limits
     ax.axhline(USL, linestyle=":", linewidth=2, label="USL")
     ax.axhline(LSL, linestyle=":", linewidth=2, label="LSL")
 
-    # Labels on right
-    x_pos = len(xbar) - 0.5
-    ax.text(x_pos, UCL_xbar, f"UCL = {UCL_xbar:.3f}", va="center")
-    ax.text(x_pos, center_line, f"CL = {center_line:.3f}", va="center")
-    ax.text(x_pos, LCL_xbar, f"LCL = {LCL_xbar:.3f}", va="center")
-    ax.text(x_pos, USL, f"USL = {USL:.3f}", va="center")
-    ax.text(x_pos, LSL, f"LSL = {LSL:.3f}", va="center")
+    # ---- Clean label placement ----
+    x_text = len(xbar) + 0.5  # push labels outside plot
+    offset = 0.015  # vertical spacing
 
+    ax.text(x_text, UCL_xbar + offset, f"UCL = {UCL_xbar:.3f}", va="bottom")
+    ax.text(x_text, center_line + offset, f"CL = {center_line:.3f}", va="bottom")
+    ax.text(x_text, LCL_xbar - offset, f"LCL = {LCL_xbar:.3f}", va="top")
+
+    ax.text(x_text, USL + offset, f"USL = {USL:.3f}", va="bottom")
+    ax.text(x_text, LSL - offset, f"LSL = {LSL:.3f}", va="top")
+
+    # Axes & layout
     ax.set_xlabel("Subgroup")
     ax.set_ylabel("X̄")
-    ax.legend()
-    ax.margins(x=0.1)
+    ax.set_xlim(-0.5, len(xbar) + 3)  # space for labels
+    ax.legend(loc="lower left")
+    ax.grid(alpha=0.3)
 
     st.pyplot(fig)
 
