@@ -320,6 +320,15 @@ if uploaded_file is not None:
             "**TEST 1 PASSED.** One point more than 3.00 standard deviations from center line."
         )
 
+    # ----- 6. Capability Indices -----
+    Cp = (USL - LSL) / (6 * sigma_within)
+    Cpk = min((USL - mu) / (3 * sigma_within), (mu - LSL) / (3 * sigma_within))
+    Pp = (USL - LSL) / (6 * sigma_overall)
+    Ppk = min((USL - mu) / (3 * sigma_overall), (mu - LSL) / (3 * sigma_overall))
+    PPM = (
+        1 - norm.cdf(USL, mu, sigma_overall) + norm.cdf(LSL, mu, sigma_overall)
+    ) * 1e6
+
     # ----- Capability Plot -----
     st.subheader("Capability Plot")
 
