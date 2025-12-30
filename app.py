@@ -119,42 +119,57 @@ if uploaded_file is not None:
     # Test 1: One point beyond 3 sigma (UCL/LCL)
     xbar_failed_points = (idx[out_of_control] + 1).tolist()  # +1 for 1-based indexing
 
-    if xbar_failed_points:
-        st.info(
-            f"""
-            **TEST 1.** One point more than 3.00 standard deviations from center line.
-
-            **Test Failed at points:** {', '.join(map(str, xbar_failed_points))}
-            """
-        )
-    else:
-        st.success(
-            "**TEST 1 PASSED.** One point more than 3.00 standard deviations from center line."
-        )
-
     # ----- 3. R Chart -----
     st.subheader("R Chart")
-    fig, ax = plt.subplots()
-    ax.plot(R, marker="o")
-    ax.axhline(R_bar)
-    ax.axhline(R_bar * 4.918)  # D4
-    ax.axhline(0)
+
+    D4 = 4.918
+    D3 = 0.0
+
+    UCL_R = R_bar * D4
+    LCL_R = R_bar * D3
+
+    R_vals = np.array(R)
+    idx_R = np.arange(len(R_vals))
+
+    out_of_control_R = (R_vals > UCL_R) | (R_vals < LCL_R)
+
+    fig, ax = plt.subplots(figsize=(9, 5))
+
+    # Plot R values
+    ax.plot(idx_R, R_vals, marker="o", linewidth=2)
+
+    # Highlight out-of-control points
+    ax.scatter(
+        idx_R[out_of_control_R],
+        R_vals[out_of_control_R],
+        color="red",
+        marker="s",
+        s=80,
+    )
+
+    # Control limits
+    ax.axhline(R_bar, linestyle="--", linewidth=1.5)
+    ax.axhline(UCL_R, linestyle="--", linewidth=1.5)
+    ax.axhline(LCL_R, linestyle="--", linewidth=1.5)
+
+    # ---- Tidy labels on right (same style as X̄) ----
+    x_text = len(R_vals) + 0.5
+    offset = 0.015 * max(R_vals)  # scale offset to data
+
+    ax.text(x_text, UCL_R + offset, f"UCL = {UCL_R:.3f}", va="bottom")
+    ax.text(x_text, R_bar + offset, f"R̄ = {R_bar:.3f}", va="bottom")
+    ax.text(x_text, LCL_R - offset, f"LCL = {LCL_R:.3f}", va="top")
+
+    # Layout
     ax.set_xlabel("Subgroup")
     ax.set_ylabel("Range")
+    ax.set_xlim(-0.5, len(R_vals) + 3)
+    ax.grid(alpha=0.3)
+
     st.pyplot(fig)
 
-    # ----- 4. Histogram -----
-    st.subheader("Capability Histogram")
-    fig, ax = plt.subplots()
-    count, bins, _ = ax.hist(data, bins=12, density=True)
-
-    x = np.linspace(min(bins), max(bins), 200)
-    ax.plot(x, norm.pdf(x, mu, sigma_overall))
-    ax.plot(x, norm.pdf(x, mu, sigma_within), linestyle="--")
-
-    ax.axvline(LSL, linestyle=":")
-    ax.axvline(USL, linestyle=":")
-    st.pyplot(fig)
+    # Store R-chart test failures (1-based indexing)
+    r_failed_points = (idx_R[out_of_control_R] + 1).tolist()
 
     # ----- 5. Normal Probability Plot -----
     st.subheader("Normal Probability Plot")
@@ -177,3 +192,33 @@ if uploaded_file is not None:
     st.write(f"**Pp (Overall):** {Pp:.3f}")
     st.write(f"**Ppk (Overall):** {Ppk:.3f}")
     st.write(f"**PPM (Overall):** {PPM:.2f}")
+
+    # Test Results
+    if xbar_failed_points:
+        st.info(
+            f"""
+            **TEST 1.** One point more than 3.00 standard deviations from center line.
+
+            **Test Failed at points:** {', '.join(map(str, xbar_failed_points))}
+            """
+        )
+    else:
+        st.success(
+            "**TEST 1 PASSED.** One point more than 3.00 standard deviations from center line."
+        )
+
+    # ----- R Chart Test Results -----
+    st.subheader("Test Results for R Chart of C1")
+
+    if r_failed_points:
+        st.info(
+            f"""
+            **TEST 1.** One point more than 3.00 standard deviations from center line.
+
+            **Test Failed at points:** {', '.join(map(str, r_failed_points))}
+            """
+        )
+    else:
+        st.success(
+            "**TEST 1 PASSED.** One point more than 3.00 standard deviations from center line."
+        )
