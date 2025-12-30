@@ -106,12 +106,31 @@ if uploaded_file is not None:
 
     # Layout
     ax.set_xlabel("Subgroup")
-    ax.set_ylabel("X̄")
+    ax.set_ylabel("Sample Mean")
     ax.set_xlim(-0.5, len(xbar_vals) + 3)
     ax.grid(alpha=0.3)
     # ax.legend(loc="lower left")
 
     st.pyplot(fig)
+
+    # ----- Xbar Chart Test Results -----
+    st.markdown("### Test Results for X̄ Chart of C1")
+
+    # Test 1: One point beyond 3 sigma (UCL/LCL)
+    xbar_failed_points = (idx[out_of_control] + 1).tolist()  # +1 for 1-based indexing
+
+    if xbar_failed_points:
+        st.info(
+            f"""
+            **TEST 1.** One point more than 3.00 standard deviations from center line.
+
+            **Test Failed at points:** {', '.join(map(str, xbar_failed_points))}
+            """
+        )
+    else:
+        st.success(
+            "**TEST 1 PASSED.** One point more than 3.00 standard deviations from center line."
+        )
 
     # ----- 3. R Chart -----
     st.subheader("R Chart")
