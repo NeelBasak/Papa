@@ -271,14 +271,18 @@ if uploaded_file is not None:
     # Probability plot
     (osm, osr), (slope, intercept, r) = probplot(data, dist="norm")
 
-    ax.scatter(osr, osm, s=40)
-    ax.plot(osr, slope * osr + intercept, color="brown", linewidth=2)
+    # Correct axes:
+    # X = theoretical normal quantiles
+    # Y = ordered data
+    ax.scatter(osm, osr, s=40)
 
-    # Titles like Minitab
-    ax.set_title(f"Normal Prob Plot\nAD: {ad_stat:.3f}, P: {p_value:.3f}", fontsize=12)
+    # Correct fitted line
+    ax.plot(osm, slope * osm + intercept, color="brown", linewidth=2)
 
-    ax.set_xlabel("Data")
-    ax.set_ylabel("Normal Score")
+    ax.set_title(f"Normal Prob Plot\nAD: {ad_stat:.3f}, P: {p_value:.3f}")
+
+    ax.set_xlabel("Normal Score")
+    ax.set_ylabel("Data")
     ax.grid(alpha=0.3)
 
     st.pyplot(fig)
