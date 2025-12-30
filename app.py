@@ -168,20 +168,28 @@ if uploaded_file is not None:
     # Store R-chart test failures (1-based indexing)
     r_failed_points = (idx_R[out_of_control_R] + 1).tolist()
 
-    # ----- Last 25 Subgroups (X̄ vs Subgroup) -----
-    st.subheader("Last 25 Subgroups (X̄)")
+    # ----- Last 25 Subgroups (Individual Values) -----
+    st.subheader("Last 25 Subgroups")
 
-    n_show = min(25, len(xbar))
-    last_xbar = xbar[-n_show:]
-    subgroup_idx = np.arange(len(xbar) - n_show + 1, len(xbar) + 1)
+    n_show = min(25, n_subgroups)
+
+    # Take last 25 subgroups
+    last_subgroups = subgroups[-n_show:]  # shape: (n_show, subgroup_size)
 
     fig, ax = plt.subplots(figsize=(9, 4))
 
-    ax.plot(subgroup_idx, last_xbar, marker="o", linewidth=2)
-    ax.axhline(center_line, linestyle="--", linewidth=1.5)
+    # Plot each subgroup as a vertical stack of points
+    for i in range(n_show):
+        x_vals = np.full(subgroup_size, i + 1)  # subgroup index (1-based)
+        y_vals = last_subgroups[i]
+        ax.scatter(x_vals, y_vals, s=40)
 
-    ax.set_xlabel("Subgroup")
-    ax.set_ylabel("Subgroup Mean (X̄)")
+    # Optional: overall mean line (Minitab-style)
+    ax.axhline(mu, linestyle="--", linewidth=1.5)
+
+    ax.set_xlabel("Sample")
+    ax.set_ylabel("Values")
+    ax.set_title("Last 25 Subgroups")
     ax.grid(alpha=0.3)
 
     st.pyplot(fig)
