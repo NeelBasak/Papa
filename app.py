@@ -65,8 +65,25 @@ if uploaded_file is not None:
     UCL_xbar = center_line + 3 * sigma_xbar
     LCL_xbar = center_line - 3 * sigma_xbar
 
-    # Plot Xbar points
-    ax.plot(xbar, marker="o", linewidth=2, label="X̄")
+    # Convert to numpy for masking
+    xbar_vals = np.array(xbar)
+    idx = np.arange(len(xbar_vals))
+
+    # Mask for out-of-control points
+    out_of_control = (xbar_vals > UCL_xbar) | (xbar_vals < LCL_xbar)
+
+    # Plot all points (normal)
+    ax.plot(idx, xbar_vals, marker="o", linewidth=2, label="X̄")
+
+    # Highlight out-of-control points
+    ax.scatter(
+        idx[out_of_control],
+        xbar_vals[out_of_control],
+        color="red",
+        marker="s",
+        s=80,
+        label="Out of Control",
+    )
 
     # Control limits
     ax.axhline(center_line, linestyle="--", linewidth=1.5, label="CL")
@@ -77,23 +94,22 @@ if uploaded_file is not None:
     ax.axhline(USL, linestyle=":", linewidth=2, label="USL")
     ax.axhline(LSL, linestyle=":", linewidth=2, label="LSL")
 
-    # ---- Clean label placement ----
-    x_text = len(xbar) + 0.5  # push labels outside plot
-    offset = 0.015  # vertical spacing
+    # ---- Tidy labels on right ----
+    x_text = len(xbar_vals) + 0.5
+    offset = 0.015
 
     ax.text(x_text, UCL_xbar + offset, f"UCL = {UCL_xbar:.3f}", va="bottom")
     ax.text(x_text, center_line + offset, f"CL = {center_line:.3f}", va="bottom")
     ax.text(x_text, LCL_xbar - offset, f"LCL = {LCL_xbar:.3f}", va="top")
-
     ax.text(x_text, USL + offset, f"USL = {USL:.3f}", va="bottom")
     ax.text(x_text, LSL - offset, f"LSL = {LSL:.3f}", va="top")
 
-    # Axes & layout
+    # Layout
     ax.set_xlabel("Subgroup")
     ax.set_ylabel("X̄")
-    ax.set_xlim(-0.5, len(xbar) + 3)  # space for labels
-    ax.legend(loc="lower left")
+    ax.set_xlim(-0.5, len(xbar_vals) + 3)
     ax.grid(alpha=0.3)
+    ax.legend(loc="lower left")
 
     st.pyplot(fig)
 
