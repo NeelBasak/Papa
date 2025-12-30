@@ -65,23 +65,32 @@ if uploaded_file is not None:
     UCL_xbar = center_line + 3 * sigma_xbar
     LCL_xbar = center_line - 3 * sigma_xbar
 
-    # Convert to numpy for masking
+    # Convert to numpy
     xbar_vals = np.array(xbar)
     idx = np.arange(len(xbar_vals))
 
-    # Mask for out-of-control points
+    # Masks
     out_of_control = (xbar_vals > UCL_xbar) | (xbar_vals < LCL_xbar)
+    in_control = ~out_of_control
 
-    # Plot all points (normal)
-    ax.plot(idx, xbar_vals, marker="o", linewidth=2, label="X̄")
+    # Plot IN-CONTROL points (blue circles)
+    ax.plot(
+        idx[in_control],
+        xbar_vals[in_control],
+        linestyle="-",
+        marker="o",
+        linewidth=2,
+        label="In Control",
+    )
 
-    # Highlight out-of-control points
-    ax.scatter(
+    # Plot OUT-OF-CONTROL points (red squares ONLY)
+    ax.plot(
         idx[out_of_control],
         xbar_vals[out_of_control],
-        color="red",
+        linestyle="None",
         marker="s",
-        s=80,
+        markersize=8,
+        color="red",
         label="Out of Control",
     )
 
@@ -94,7 +103,7 @@ if uploaded_file is not None:
     ax.axhline(USL, linestyle=":", linewidth=2, label="USL")
     ax.axhline(LSL, linestyle=":", linewidth=2, label="LSL")
 
-    # ---- Tidy labels on right ----
+    # Right-side labels
     x_text = len(xbar_vals) + 0.5
     offset = 0.015
 
