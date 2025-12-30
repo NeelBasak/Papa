@@ -378,41 +378,43 @@ if uploaded_file is not None:
 
     # ----- Left-side stats (Within) -----
     left_text = (
-        f"Within\n"
-        f"StDev   {sigma_within:.4f}\n"
-        f"Cp      {Cp:.2f}\n"
-        f"Cpk     {Cpk:.2f}\n"
-        f"PPM     {PPM:.2f}"
+        "Within\n"
+        f"StDev   {sigma_within:>7.4f}\n"
+        f"Cp      {Cp:>7.2f}\n"
+        f"Cpk     {Cpk:>7.2f}\n"
+        f"PPM     {PPM:>7.2f}"
     )
 
     ax.text(
-        0.10,  # slightly inside left margin
-        0.5,  # vertical center
+        0.10,
+        0.5,
         left_text,
         transform=ax.transAxes,
         va="center",
-        ha="center",  # <-- changed
+        ha="left",  # left-align text
         fontsize=9,
+        family="monospace",  # <-- key line
     )
 
     # ----- Right-side stats (Overall) -----
     right_text = (
-        f"Overall\n"
-        f"StDev   {sigma_overall:.4f}\n"
-        f"Pp      {Pp:.2f}\n"
-        f"Ppk     {Ppk:.2f}\n"
-        f"Cpm     *\n"
-        f"PPM     {PPM:.2f}"
+        "Overall\n"
+        f"StDev   {sigma_overall:>7.4f}\n"
+        f"Pp      {Pp:>7.2f}\n"
+        f"Ppk     {Ppk:>7.2f}\n"
+        f"Cpm     {'*':>7}\n"
+        f"PPM     {PPM:>7.2f}"
     )
 
     ax.text(
-        0.90,  # slightly inside right margin
-        0.5,  # vertical center
+        0.90,
+        0.5,
         right_text,
         transform=ax.transAxes,
         va="center",
-        ha="center",  # <-- changed
+        ha="right",  # anchor block symmetrically
         fontsize=9,
+        family="monospace",  # <-- key line
     )
 
     st.pyplot(fig)
