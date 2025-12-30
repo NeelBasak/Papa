@@ -287,39 +287,6 @@ if uploaded_file is not None:
 
     st.pyplot(fig)
 
-    # Test Results
-
-    # ----- Xbar Chart Test Results -----
-    st.markdown("### Test Results for X̄ Chart of C1")
-    if xbar_failed_points:
-        st.info(
-            f"""
-            **TEST 1.** One point more than 3.00 standard deviations from center line.
-
-            **Test Failed at points:** {', '.join(map(str, xbar_failed_points))}
-            """
-        )
-    else:
-        st.success(
-            "**TEST 1 PASSED.** One point more than 3.00 standard deviations from center line."
-        )
-
-    # ----- R Chart Test Results -----
-    st.subheader("Test Results for R Chart of C1")
-
-    if r_failed_points:
-        st.info(
-            f"""
-            **TEST 1.** One point more than 3.00 standard deviations from center line.
-
-            **Test Failed at points:** {', '.join(map(str, r_failed_points))}
-            """
-        )
-    else:
-        st.success(
-            "**TEST 1 PASSED.** One point more than 3.00 standard deviations from center line."
-        )
-
     # ----- 6. Capability Indices -----
     Cp = (USL - LSL) / (6 * sigma_within)
     Cpk = min((USL - mu) / (3 * sigma_within), (mu - LSL) / (3 * sigma_within))
@@ -418,3 +385,36 @@ if uploaded_file is not None:
     )
 
     st.pyplot(fig)
+
+    # Test Results
+
+    # ----- Xbar Chart Test Results -----
+    st.markdown("### Test Results for X̄ Chart of C1")
+    if xbar_failed_points:
+        st.info(
+            f"""
+            **TEST 1.** One point more than 3.00 standard deviations from center line.
+
+            **Test Failed at points:** {', '.join(map(str, xbar_failed_points))}
+            """
+        )
+    else:
+        st.success(
+            "**TEST 1 PASSED.** One point more than 3.00 standard deviations from center line."
+        )
+
+    # ----- R Chart Test Results -----
+    st.subheader("Test Results for R Chart of C1")
+
+    if r_failed_points:
+        st.info(
+            f"""
+            **TEST 1.** One point more than 3.00 standard deviations from center line.
+
+            **Test Failed at points:** {', '.join(map(str, r_failed_points))}
+            """
+        )
+    else:
+        st.success(
+            "**TEST 1 PASSED.** One point more than 3.00 standard deviations from center line."
+        )
