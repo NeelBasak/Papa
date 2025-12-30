@@ -194,6 +194,70 @@ if uploaded_file is not None:
 
     st.pyplot(fig)
 
+    # ----- 4. Capability Histogram (Minitab-style) -----
+    st.subheader("Capability Histogram")
+
+    fig, ax = plt.subplots(figsize=(9, 5))
+
+    # Histogram
+    count, bins, _ = ax.hist(
+        data, bins=12, density=True, color="#7da7d9", edgecolor="black", alpha=0.85
+    )
+
+    # X range for curves
+    x = np.linspace(min(bins), max(bins), 300)
+
+    # Normal curves
+    ax.plot(
+        x, norm.pdf(x, mu, sigma_overall), color="brown", linewidth=2, label="Overall"
+    )
+
+    ax.plot(
+        x,
+        norm.pdf(x, mu, sigma_within),
+        color="black",
+        linestyle="--",
+        linewidth=2,
+        label="Within",
+    )
+
+    # Spec limits
+    ax.axvline(LSL, color="red", linestyle="--", linewidth=1.5)
+    ax.axvline(USL, color="red", linestyle="--", linewidth=1.5)
+
+    # Labels for spec lines
+    ax.text(LSL, ax.get_ylim()[1] * 0.95, "LSL", color="red", ha="center", va="top")
+    ax.text(USL, ax.get_ylim()[1] * 0.95, "USL", color="red", ha="center", va="top")
+
+    ax.set_xlabel("Value")
+    ax.set_ylabel("Density")
+    ax.set_title("Capability Histogram")
+
+    # ---- Right-side info box (like Minitab) ----
+    spec_text = (
+        "Overall\n"
+        "— Solid line\n\n"
+        "Within\n"
+        "-- Dashed line\n\n"
+        "Specifications\n"
+        f"LSL    {LSL:.2f}\n"
+        f"USL    {USL:.2f}"
+    )
+
+    ax.text(
+        1.03,
+        0.5,
+        spec_text,
+        transform=ax.transAxes,
+        va="center",
+        fontsize=10,
+        bbox=dict(boxstyle="round,pad=0.4", facecolor="white", edgecolor="gray"),
+    )
+
+    ax.grid(alpha=0.3)
+
+    st.pyplot(fig)
+
     # ----- 5. Normal Probability Plot -----
     st.subheader("Normal Probability Plot")
     fig = plt.figure()
