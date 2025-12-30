@@ -287,6 +287,75 @@ if uploaded_file is not None:
 
     st.pyplot(fig)
 
+    # ----- Capability Plot -----
+    st.subheader("Capability Plot")
+
+    fig, ax = plt.subplots(figsize=(9, 5))
+
+    # Y positions for the three bars
+    y_overall = 3
+    y_within = 2
+    y_specs = 1
+
+    # ----- OVERALL -----
+    ax.hlines(y_overall, mu - 3 * sigma_overall, mu + 3 * sigma_overall, linewidth=2)
+    ax.vlines(
+        [mu - 3 * sigma_overall, mu, mu + 3 * sigma_overall],
+        y_overall - 0.15,
+        y_overall + 0.15,
+    )
+
+    # ----- WITHIN -----
+    ax.hlines(y_within, mu - 3 * sigma_within, mu + 3 * sigma_within, linewidth=2)
+    ax.vlines(
+        [mu - 3 * sigma_within, mu, mu + 3 * sigma_within],
+        y_within - 0.15,
+        y_within + 0.15,
+    )
+
+    # ----- SPECS -----
+    ax.hlines(y_specs, LSL, USL, linewidth=2)
+    ax.vlines([LSL, USL], y_specs - 0.15, y_specs + 0.15)
+
+    # Labels
+    ax.set_yticks([y_overall, y_within, y_specs])
+    ax.set_yticklabels(["Overall", "Within", "Specs"])
+
+    ax.set_xlabel("Value")
+    ax.set_title("Capability Plot")
+
+    # Limits
+    xmin = min(LSL, mu - 3 * sigma_overall) - 0.1
+    xmax = max(USL, mu + 3 * sigma_overall) + 0.1
+    ax.set_xlim(xmin, xmax)
+
+    ax.grid(axis="x", alpha=0.3)
+
+    # ----- Left-side stats (Within) -----
+    left_text = (
+        f"Within\n"
+        f"StDev   {sigma_within:.4f}\n"
+        f"Cp      {Cp:.2f}\n"
+        f"Cpk     {Cpk:.2f}\n"
+        f"PPM     {PPM:.2f}"
+    )
+
+    ax.text(xmin, y_within, left_text, va="center", ha="left", fontsize=9)
+
+    # ----- Right-side stats (Overall) -----
+    right_text = (
+        f"Overall\n"
+        f"StDev   {sigma_overall:.4f}\n"
+        f"Pp      {Pp:.2f}\n"
+        f"Ppk     {Ppk:.2f}\n"
+        f"Cpm     *\n"
+        f"PPM     {PPM:.2f}"
+    )
+
+    ax.text(xmax, y_within, right_text, va="center", ha="right", fontsize=9)
+
+    st.pyplot(fig)
+
     # Test Results
 
     # ----- Xbar Chart Test Results -----
