@@ -109,7 +109,7 @@ if uploaded_file is not None:
     ax.set_ylabel("X̄")
     ax.set_xlim(-0.5, len(xbar_vals) + 3)
     ax.grid(alpha=0.3)
-    ax.legend(loc="lower left")
+    # ax.legend(loc="lower left")
 
     st.pyplot(fig)
 
