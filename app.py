@@ -386,7 +386,13 @@ if uploaded_file is not None:
     )
 
     ax.text(
-        0.02, 0.5, left_text, transform=ax.transAxes, va="center", ha="left", fontsize=9
+        0.10,  # slightly inside left margin
+        0.5,  # vertical center
+        left_text,
+        transform=ax.transAxes,
+        va="center",
+        ha="center",  # <-- changed
+        fontsize=9,
     )
 
     # ----- Right-side stats (Overall) -----
@@ -400,12 +406,12 @@ if uploaded_file is not None:
     )
 
     ax.text(
-        0.98,
-        0.5,
+        0.90,  # slightly inside right margin
+        0.5,  # vertical center
         right_text,
         transform=ax.transAxes,
         va="center",
-        ha="right",
+        ha="center",  # <-- changed
         fontsize=9,
     )
 
