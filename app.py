@@ -45,29 +45,45 @@ if uploaded_file is not None:
     sigma_overall = data.std(ddof=0)
     mu = data.mean()
 
-    # ----- 1. Individual Plot -----
-    st.subheader("Individual Values (Last 25 Samples)")
-    fig, ax = plt.subplots()
-    ax.plot(range(1, 26), data[-25:], marker="o")
-    ax.axhline(mu, linestyle="--")
-    ax.set_xlabel("Sample")
-    ax.set_ylabel("Values")
-    st.pyplot(fig)
+    # # ----- 1. Individual Plot -----
+    # st.subheader("Individual Values (Last 25 Samples)")
+    # fig, ax = plt.subplots()
+    # ax.plot(range(1, 26), data[-25:], marker="o")
+    # ax.axhline(mu, linestyle="--")
+    # ax.set_xlabel("Sample")
+    # ax.set_ylabel("Values")
+    # st.pyplot(fig)
 
     # ----- 2. Xbar Chart -----
     st.subheader("X̄ Chart")
+
     fig, ax = plt.subplots()
+
     sigma_xbar = sigma_within / np.sqrt(subgroup_size)
     center_line = xbar.mean()
     UCL_xbar = center_line + 3 * sigma_xbar
     LCL_xbar = center_line - 3 * sigma_xbar
 
-    ax.plot(xbar, marker="o")
-    ax.axhline(center_line)
-    ax.axhline(UCL_xbar)
-    ax.axhline(LCL_xbar)
+    ax.plot(xbar, marker="o", linestyle="-")
+
+    # Draw control lines
+    ax.axhline(center_line, linestyle="--")
+    ax.axhline(UCL_xbar, linestyle="--")
+    ax.axhline(LCL_xbar, linestyle="--")
+
+    # Labels on the right side of the plot
+    x_pos = len(xbar) - 0.5
+
+    ax.text(x_pos, UCL_xbar, f"UCL = {UCL_xbar:.3f}", va="center", ha="left")
+    ax.text(x_pos, center_line, f"CL = {center_line:.3f}", va="center", ha="left")
+    ax.text(x_pos, LCL_xbar, f"LCL = {LCL_xbar:.3f}", va="center", ha="left")
+
     ax.set_xlabel("Subgroup")
     ax.set_ylabel("X̄")
+
+    # Add some padding so text is visible
+    ax.margins(x=0.1)
+
     st.pyplot(fig)
 
     # ----- 3. R Chart -----
