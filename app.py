@@ -54,34 +54,40 @@ if uploaded_file is not None:
     # ax.set_ylabel("Values")
     # st.pyplot(fig)
 
-    # ----- 2. Xbar Chart -----
+    # ----- Xbar Chart with Spec Limits -----
     st.subheader("X̄ Chart")
 
     fig, ax = plt.subplots()
 
     sigma_xbar = sigma_within / np.sqrt(subgroup_size)
     center_line = xbar.mean()
+
     UCL_xbar = center_line + 3 * sigma_xbar
     LCL_xbar = center_line - 3 * sigma_xbar
 
-    ax.plot(xbar, marker="o", linestyle="-")
+    # Plot Xbar points
+    ax.plot(xbar, marker="o", linestyle="-", label="X̄")
 
-    # Draw control lines
-    ax.axhline(center_line, linestyle="--")
-    ax.axhline(UCL_xbar, linestyle="--")
-    ax.axhline(LCL_xbar, linestyle="--")
+    # Control limits
+    ax.axhline(center_line, linestyle="--", label="CL")
+    ax.axhline(UCL_xbar, linestyle="--", label="UCL")
+    ax.axhline(LCL_xbar, linestyle="--", label="LCL")
 
-    # Labels on the right side of the plot
+    # Spec limits
+    ax.axhline(USL, linestyle=":", linewidth=2, label="USL")
+    ax.axhline(LSL, linestyle=":", linewidth=2, label="LSL")
+
+    # Labels on right
     x_pos = len(xbar) - 0.5
-
-    ax.text(x_pos, UCL_xbar, f"UCL = {UCL_xbar:.3f}", va="center", ha="left")
-    ax.text(x_pos, center_line, f"CL = {center_line:.3f}", va="center", ha="left")
-    ax.text(x_pos, LCL_xbar, f"LCL = {LCL_xbar:.3f}", va="center", ha="left")
+    ax.text(x_pos, UCL_xbar, f"UCL = {UCL_xbar:.3f}", va="center")
+    ax.text(x_pos, center_line, f"CL = {center_line:.3f}", va="center")
+    ax.text(x_pos, LCL_xbar, f"LCL = {LCL_xbar:.3f}", va="center")
+    ax.text(x_pos, USL, f"USL = {USL:.3f}", va="center")
+    ax.text(x_pos, LSL, f"LSL = {LSL:.3f}", va="center")
 
     ax.set_xlabel("Subgroup")
     ax.set_ylabel("X̄")
-
-    # Add some padding so text is visible
+    ax.legend()
     ax.margins(x=0.1)
 
     st.pyplot(fig)
