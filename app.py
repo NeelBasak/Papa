@@ -407,7 +407,7 @@ if uploaded_file is not None:
     )
 
     ax.text(
-        0.94,
+        0.98,
         0.5,
         right_text,
         transform=ax.transAxes,
