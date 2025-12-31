@@ -5,8 +5,42 @@ import matplotlib.pyplot as plt
 from scipy.stats import norm, probplot
 from statsmodels.stats.diagnostic import normal_ad
 
+# Theme and background
+import matplotlib.pyplot as plt
+
+plt.rcParams.update(
+    {
+        "axes.facecolor": "#ffffff",
+        "figure.facecolor": "#ffffff",
+        "axes.edgecolor": "#9aa4af",
+        "axes.linewidth": 1.1,
+        "axes.labelcolor": "#1f2937",
+        "xtick.color": "#374151",
+        "ytick.color": "#374151",
+        "grid.color": "#d1d5db",
+        "grid.alpha": 0.6,
+    }
+)
+
 
 st.set_page_config(page_title="Process Capability App", layout="centered")
+st.markdown(
+    """
+    <style>
+    /* Sidebar background */
+    section[data-testid="stSidebar"] {
+        background-color: #e5e7eb;   /* slightly darker than main */
+        border-right: 1px solid #cbd5e1;
+    }
+
+    /* Main app background (kept light) */
+    .stApp {
+        background-color: #eef2f6;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 st.title("📊 Process Capability Analysis")
 st.write("Upload a CSV or Excel file containing numeric data.")
 
@@ -27,7 +61,7 @@ if uploaded_file is not None:
         st.error("At least 25 data points are required.")
         st.stop()
 
-    # ---- User inputs (dad-friendly sliders) ----
+    # ---- User inputs ----
     st.sidebar.header("Specifications")
     USL = st.sidebar.number_input("USL", value=8.35)
     LSL = st.sidebar.number_input("LSL", value=6.92)
@@ -55,7 +89,6 @@ if uploaded_file is not None:
     # ax.set_xlabel("Sample")
     # ax.set_ylabel("Values")
     # st.pyplot(fig)
-
     # ----- Xbar Chart -----
     st.subheader("X̄ Chart")
 
@@ -118,8 +151,11 @@ if uploaded_file is not None:
     # Test 1: One point beyond 3 sigma (UCL/LCL)
     xbar_failed_points = (idx[out_of_control] + 1).tolist()  # +1 for 1-based indexing
 
+    st.write(
+        "The value of UCL_r has been calculated according to D4 = 4.918, if the value doesn't match with what you expected then you have to provide me with the actual D4 and I will make corresponding changes into the code."
+    )
     # ----- 3. R Chart -----
-    st.subheader("R Chart")
+    st.subheader("R̄ Chart")
 
     D4 = 4.918
     D3 = 0.0
@@ -155,9 +191,10 @@ if uploaded_file is not None:
     x_text = len(R_vals) + 0.5
     offset = 0.015 * max(R_vals)  # scale offset to data
 
-    ax.text(x_text, UCL_R + offset, f"UCL = {UCL_R:.3f}", va="bottom")
-    ax.text(x_text, R_bar + offset, f"R̄ = {R_bar:.3f}", va="bottom")
-    ax.text(x_text, LCL_R - offset, f"LCL = {LCL_R:.3f}", va="top")
+    x_shift = 1.9
+    ax.text(x_text - x_shift, UCL_R + offset, f"UCL = {UCL_R:.3f}", va="bottom")
+    ax.text(x_text - x_shift, R_bar + offset, f"R_bar = {R_bar:.3f}", va="bottom")
+    ax.text(x_text - x_shift, LCL_R - offset, f"LCL = {LCL_R:.3f}", va="top")
 
     # Layout
     ax.set_xlabel("Subgroup")
@@ -203,7 +240,12 @@ if uploaded_file is not None:
 
     # Histogram
     count, bins, _ = ax.hist(
-        data, bins=12, density=True, color="#7da7d9", edgecolor="black", alpha=0.85
+        data,
+        bins=12,
+        density=True,
+        color="#7da7d9",
+        edgecolor="black",
+        alpha=0.85,
     )
 
     # X range for curves
@@ -211,7 +253,11 @@ if uploaded_file is not None:
 
     # Normal curves
     ax.plot(
-        x, norm.pdf(x, mu, sigma_overall), color="brown", linewidth=2, label="Overall"
+        x,
+        norm.pdf(x, mu, sigma_overall),
+        color="brown",
+        linewidth=2,
+        label="Overall",
     )
 
     ax.plot(
@@ -223,19 +269,52 @@ if uploaded_file is not None:
         label="Within",
     )
 
-    # Spec limits
+    import matplotlib.transforms as transforms
+
+    # --- Spec limit lines ---
     ax.axvline(LSL, color="red", linestyle="--", linewidth=1.5)
     ax.axvline(USL, color="red", linestyle="--", linewidth=1.5)
 
-    # Labels for spec lines
-    ax.text(LSL, ax.get_ylim()[1] * 0.95, "LSL", color="red", ha="center", va="top")
-    ax.text(USL, ax.get_ylim()[1] * 0.95, "USL", color="red", ha="center", va="top")
+    # --- Remove any existing LSL/USL labels (important for Streamlit reruns) ---
+    for txt in ax.texts:
+        if txt.get_text().startswith(("LSL", "USL")):
+            txt.remove()
 
+    # --- Spec limit labels (printed ONCE) ---
+    y_text = ax.get_ylim()[1] - 0.02 * (ax.get_ylim()[1] - ax.get_ylim()[0])
+
+    dx = 6 / 72  # horizontal shift (points)
+    left = transforms.ScaledTranslation(-dx, 0, ax.figure.dpi_scale_trans)
+    right = transforms.ScaledTranslation(dx, 0, ax.figure.dpi_scale_trans)
+
+    ax.text(
+        LSL,
+        y_text,
+        f"LSL = {LSL:.3f}",
+        transform=ax.transData + left,
+        color="red",
+        ha="right",
+        va="top",
+        bbox=dict(facecolor="white", alpha=0.7, edgecolor="none"),
+    )
+
+    ax.text(
+        USL,
+        y_text,
+        f"USL = {USL:.3f}",
+        transform=ax.transData + right,
+        color="red",
+        ha="left",
+        va="top",
+        bbox=dict(facecolor="white", alpha=0.7, edgecolor="none"),
+    )
+
+    # Axis labels & title
     ax.set_xlabel("Value")
     ax.set_ylabel("Density")
     ax.set_title("Capability Histogram")
 
-    # ---- Right-side info box (like Minitab) ----
+    # ---- Right-side info box (Minitab-style) ----
     spec_text = (
         "Overall\n"
         "— Solid line\n\n"
