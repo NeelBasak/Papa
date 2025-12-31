@@ -497,3 +497,44 @@ if uploaded_file is not None:
         st.success(
             "**TEST 1 PASSED.** One point more than 3.00 standard deviations from center line."
         )
+
+    Cp = (USL - LSL) / (6 * sigma_within)
+
+    Cpu = (USL - mu) / (3 * sigma_within)
+    Cpl = (mu - LSL) / (3 * sigma_within)
+
+    Cpk = min(Cpu, Cpl)
+
+    Pp = (USL - LSL) / (6 * sigma_overall)
+    Ppu = (USL - mu) / (3 * sigma_overall)
+    Ppl = (mu - LSL) / (3 * sigma_overall)
+    Ppk = min(Ppu, Ppl)
+
+    st.subheader("Process Capability Indices")
+
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric("Cp", f"{Cp:.2f}")
+    col1.metric("Cpu", f"{Cpu:.2f}")
+    col1.metric("Cpl", f"{Cpl:.2f}")
+
+    col2.metric("Cpk", f"{Cpk:.2f}")
+
+    col3.metric("Pp", f"{Pp:.2f}")
+    col3.metric("Ppk", f"{Ppk:.2f}")
+
+    st.caption(
+        f"""
+        Cp measures potential capability assuming centering.
+        Cpk accounts for mean shift.
+
+        Current limiting side: {"Upper" if Cpu < Cpl else "Lower"}
+        """
+    )
+
+    if Cpk < 1.0:
+        st.error(f"Cpk = {Cpk:.2f} → Process NOT capable")
+    elif Cpk < 1.33:
+        st.warning(f"Cpk = {Cpk:.2f} → Marginal capability")
+    else:
+        st.success(f"Cpk = {Cpk:.2f} → Capable process")
