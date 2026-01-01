@@ -94,6 +94,7 @@ if uploaded_file is not None:
 
     fig, ax = plt.subplots(figsize=(9, 5))
 
+    A2 = 0.577
     sigma_xbar = sigma_within / np.sqrt(subgroup_size)
     center_line = xbar.mean()
 
@@ -130,8 +131,8 @@ if uploaded_file is not None:
     ax.axhline(LSL, linestyle=":", linewidth=2, label="LSL")
 
     # ---- Tidy labels on right ----
-    x_text = len(xbar_vals) + 0.5
-    offset = 0.015
+    x_text = len(xbar_vals) - 1
+    offset = 0.010
 
     ax.text(x_text, UCL_xbar + offset, f"UCL = {UCL_xbar:.3f}", va="bottom")
     ax.text(x_text, center_line + offset, f"CL = {center_line:.3f}", va="bottom")
@@ -151,13 +152,10 @@ if uploaded_file is not None:
     # Test 1: One point beyond 3 sigma (UCL/LCL)
     xbar_failed_points = (idx[out_of_control] + 1).tolist()  # +1 for 1-based indexing
 
-    st.write(
-        "The value of UCL_r has been calculated according to D4 = 4.918, if the value doesn't match with what you expected then you have to provide me with the actual D4 and I will make corresponding changes into the code."
-    )
     # ----- 3. R Chart -----
     st.subheader("R̄ Chart")
 
-    D4 = 4.918
+    D4 = 2.114
     D3 = 0.0
 
     UCL_R = R_bar * D4
@@ -194,7 +192,7 @@ if uploaded_file is not None:
     x_shift = 1.9
     ax.text(x_text - x_shift, UCL_R + offset, f"UCL = {UCL_R:.3f}", va="bottom")
     ax.text(x_text - x_shift, R_bar + offset, f"R_bar = {R_bar:.3f}", va="bottom")
-    ax.text(x_text - x_shift, LCL_R - offset, f"LCL = {LCL_R:.3f}", va="top")
+    ax.text(x_text - x_shift, LCL_R + offset, f"LCL = {LCL_R:.3f}", va="bottom")
 
     # Layout
     ax.set_xlabel("Subgroup")
@@ -523,14 +521,14 @@ if uploaded_file is not None:
     col3.metric("Pp", f"{Pp:.2f}")
     col3.metric("Ppk", f"{Ppk:.2f}")
 
-    st.caption(
-        f"""
-        Cp measures potential capability assuming centering.
-        Cpk accounts for mean shift.
+    # st.caption(
+    #     f"""
+    #     Cp measures potential capability assuming centering.
+    #     Cpk accounts for mean shift.
 
-        Current limiting side: {"Upper" if Cpu < Cpl else "Lower"}
-        """
-    )
+    #     Current limiting side: {"Upper" if Cpu < Cpl else "Lower"}
+    #     """
+    # )
 
     if Cpk < 1.0:
         st.error(f"Cpk = {Cpk:.2f} → Process NOT capable")
