@@ -4,9 +4,99 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import norm, probplot
 from statsmodels.stats.diagnostic import normal_ad
+from matplotlib.backends.backend_pdf import PdfPages
+import tempfile
+
+
+def create_summary_figure(
+    data,
+    mu,
+    sigma_within,
+    sigma_overall,
+    Cp,
+    Cpk,
+    Pp,
+    Ppk,
+    PPM,
+    LSL,
+    USL,
+    xbar_failed_points,
+    r_failed_points,
+):
+
+    fig, ax = plt.subplots(figsize=(8.27, 11.69))  # A4 portrait
+    ax.axis("off")
+
+    # Title
+    ax.text(
+        0.5,
+        0.96,
+        "Process Capability Summary",
+        ha="center",
+        va="top",
+        fontsize=18,
+        fontweight="bold",
+    )
+
+    # Capability verdict
+    if Cpk < 1.00:
+        verdict = "Process NOT capable"
+    elif Cpk < 1.33:
+        verdict = "Marginal capability"
+    elif Cpk < 1.67:
+        verdict = "Capable process"
+    else:
+        verdict = "Highly capable process"
+
+    # ---- Control chart test results ----
+
+    if xbar_failed_points:
+        xbar_test = "X̄ Chart (Test 1):\n" "Failed at subgroups: " + ", ".join(
+            map(str, xbar_failed_points)
+        )
+    else:
+        xbar_test = "X̄ Chart (Test 1): PASSED"
+
+    if r_failed_points:
+        r_test = "R̄ Chart (Test 1):\n" "Failed at subgroups: " + ", ".join(
+            map(str, r_failed_points)
+        )
+    else:
+        r_test = "R̄ Chart (Test 1): PASSED"
+
+    # Summary text
+    summary_text = (
+        f"Sample size (N)     : {len(data)}\n"
+        f"Sample Mean         : {mu:.5f}\n\n"
+        f"Specifications      : LSL = {LSL:.3f}   USL = {USL:.3f}\n\n"
+        f"Within Std Dev      : {sigma_within:.5f}\n"
+        f"Overall Std Dev     : {sigma_overall:.5f}\n\n"
+        f"Cp                  : {Cp:.3f}\n"
+        f"Cpk                 : {Cpk:.3f}\n"
+        f"Pp                  : {Pp:.3f}\n"
+        f"Ppk                 : {Ppk:.3f}\n"
+        f"PPM (Overall)       : {PPM:.1f}\n\n"
+        "CONTROL CHART TEST RESULTS\n"
+        "---------------------------\n"
+        f"{xbar_test}\n\n"
+        f"{r_test}\n\n"
+        f"CONCLUSION          : {verdict}"
+    )
+
+    ax.text(
+        0.05,
+        0.85,
+        summary_text,
+        ha="left",
+        va="top",
+        fontsize=11,
+        family="monospace",
+    )
+
+    return fig
+
 
 # Theme and background
-import matplotlib.pyplot as plt
 
 plt.rcParams.update(
     {
@@ -89,6 +179,12 @@ if uploaded_file is not None:
     # ax.set_xlabel("Sample")
     # ax.set_ylabel("Values")
     # st.pyplot(fig)
+
+    if "figures" not in st.session_state:
+        st.session_state.figures = []
+
+    st.session_state.figures.clear()
+
     # ----- Xbar Chart -----
     st.subheader("X̄ Chart")
 
@@ -146,8 +242,10 @@ if uploaded_file is not None:
     ax.set_xlim(-0.5, len(xbar_vals) + 3)
     ax.grid(alpha=0.3)
     # ax.legend(loc="lower left")
+    ax.set_title("X_bar Chart", fontsize=13, fontweight="bold")
 
     st.pyplot(fig)
+    st.session_state.figures.append(fig)
 
     # Test 1: One point beyond 3 sigma (UCL/LCL)
     xbar_failed_points = (idx[out_of_control] + 1).tolist()  # +1 for 1-based indexing
@@ -200,7 +298,10 @@ if uploaded_file is not None:
     ax.set_xlim(-0.5, len(R_vals) + 3)
     ax.grid(alpha=0.3)
 
+    ax.set_title("R_bar Chart", fontsize=13, fontweight="bold")
+
     st.pyplot(fig)
+    st.session_state.figures.append(fig)
 
     # Store R-chart test failures (1-based indexing)
     r_failed_points = (idx_R[out_of_control_R] + 1).tolist()
@@ -226,10 +327,11 @@ if uploaded_file is not None:
 
     ax.set_xlabel("Sample")
     ax.set_ylabel("Values")
-    ax.set_title("Last 25 Subgroups")
+    ax.set_title("Last 25 Subgroups", fontsize=13, fontweight="bold")
     ax.grid(alpha=0.3)
 
     st.pyplot(fig)
+    st.session_state.figures.append(fig)
 
     # ----- 4. Capability Histogram -----
     st.subheader("Capability Histogram")
@@ -310,7 +412,7 @@ if uploaded_file is not None:
     # Axis labels & title
     ax.set_xlabel("Value")
     ax.set_ylabel("Density")
-    ax.set_title("Capability Histogram")
+    ax.set_title("Capability Histogram", fontsize=13, fontweight="bold")
 
     # ---- Right-side info box (Minitab-style) ----
     spec_text = (
@@ -336,6 +438,7 @@ if uploaded_file is not None:
     ax.grid(alpha=0.3)
 
     st.pyplot(fig)
+    st.session_state.figures.append(fig)
 
     # ----- 5. Normal Probability Plot -----
     st.subheader("Normal Probability Plot")
@@ -356,13 +459,18 @@ if uploaded_file is not None:
     # Correct fitted line
     ax.plot(osm, slope * osm + intercept, color="brown", linewidth=2)
 
-    ax.set_title(f"Normal Prob Plot\nAD: {ad_stat:.3f}, P: {p_value:.3f}")
+    ax.set_title(
+        f"Normal Probability Plot\nAD: {ad_stat:.3f}, P: {p_value:.3f}",
+        fontsize=13,
+        fontweight="bold",
+    )
 
     ax.set_xlabel("Normal Score")
     ax.set_ylabel("Data")
     ax.grid(alpha=0.3)
 
     st.pyplot(fig)
+    st.session_state.figures.append(fig)
 
     # ----- 6. Capability Indices -----
     Cp = (USL - LSL) / (6 * sigma_within)
@@ -409,7 +517,7 @@ if uploaded_file is not None:
 
     # Axis formatting
     ax.set_xlabel("Value")
-    ax.set_title("Capability Plot")
+    ax.set_title("Capability Plot", fontsize=13, fontweight="bold")
 
     xmin = min(LSL, mu - 3 * sigma_overall) - 0.1
     xmax = max(USL, mu + 3 * sigma_overall) + 0.1
@@ -462,6 +570,7 @@ if uploaded_file is not None:
     )
 
     st.pyplot(fig)
+    st.session_state.figures.append(fig)
 
     # Test Results
 
@@ -538,3 +647,41 @@ if uploaded_file is not None:
         st.info(f"Cpk = {Cpk:.2f} → Capable process")
     else:
         st.success(f"Cpk = {Cpk:.2f} → Highly capable process")
+
+    if st.session_state.figures:
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+
+        with PdfPages(tmp.name) as pdf:
+
+            # ----- All plots (NEXT PAGES) -----
+            for fig in st.session_state.figures:
+                pdf.savefig(fig, dpi=300)
+                plt.close(fig)
+
+            # ----- Summary page (LAST PAGE) -----
+            summary_fig = create_summary_figure(
+                data=data,
+                mu=mu,
+                sigma_within=sigma_within,
+                sigma_overall=sigma_overall,
+                Cp=Cp,
+                Cpk=Cpk,
+                Pp=Pp,
+                Ppk=Ppk,
+                PPM=PPM,
+                LSL=LSL,
+                USL=USL,
+                xbar_failed_points=xbar_failed_points,
+                r_failed_points=r_failed_points,
+            )
+
+            pdf.savefig(summary_fig, dpi=300)
+            plt.close(summary_fig)
+
+        with open(tmp.name, "rb") as f:
+            st.download_button(
+                label="📄 Download Analysis Report (PDF)",
+                data=f,
+                file_name="process_analysis_report.pdf",
+                mime="application/pdf",
+            )
