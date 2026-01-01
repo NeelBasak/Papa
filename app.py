@@ -181,6 +181,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 st.title("📊 Process Capability Analysis")
+st.caption("Version 1.0 — Process Capability Analysis")
 st.write("Upload a CSV or Excel file containing numeric data.")
 
 uploaded_file = st.file_uploader("Upload file", type=["csv", "xlsx"])
@@ -721,6 +722,7 @@ if uploaded_file is not None:
         st.info(f"Cpk = {Cpk:.2f} → Capable process")
     else:
         st.success(f"Cpk = {Cpk:.2f} → Highly capable process")
+    st.caption("Results assume a stable process and rational subgrouping.")
 
     if st.session_state.figures:
         tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
