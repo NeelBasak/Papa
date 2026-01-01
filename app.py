@@ -8,6 +8,55 @@ from matplotlib.backends.backend_pdf import PdfPages
 import tempfile
 
 
+def create_raw_data_figures(df, rows_per_page=30):
+    figures = []
+
+    display_df = df.fillna("")
+    total_rows = len(display_df)
+    num_pages = (total_rows // rows_per_page) + int(total_rows % rows_per_page != 0)
+
+    for page in range(num_pages):
+        start = page * rows_per_page
+        end = start + rows_per_page
+        page_df = display_df.iloc[start:end]
+
+        fig, ax = plt.subplots(figsize=(8.27, 11.69))  # A4 portrait
+        ax.axis("off")
+
+        # ---- Title (tight spacing) ----
+        title = f"Input Data (Uploaded File) — Page {page + 1} of {num_pages}"
+        ax.text(
+            0.5,
+            0.94,  # 🔧 LOWERED FROM 0.97
+            title,
+            ha="center",
+            va="top",
+            fontsize=14,
+            fontweight="bold",
+        )
+
+        # ---- Table placed BELOW title (not centered) ----
+        # ---- Pretty column headers for display ----
+        display_columns = ["MH", "Batch No.", "Date"]
+
+        table = ax.table(
+            cellText=page_df.values,
+            colLabels=display_columns,
+            cellLoc="center",
+            colLoc="center",
+            loc="upper center",
+            bbox=[0.03, 0.06, 0.94, 0.82],
+        )
+
+        table.auto_set_font_size(False)
+        table.set_fontsize(9)
+        table.scale(1, 1.25)
+
+        figures.append(fig)
+
+    return figures
+
+
 def create_summary_figure(
     data,
     mu,
@@ -138,17 +187,40 @@ uploaded_file = st.file_uploader("Upload file", type=["csv", "xlsx"])
 
 if uploaded_file is not None:
 
-    # ---- Read file ----
+    # ---- Read file (with headers) ----
     if uploaded_file.name.endswith(".csv"):
-        df = pd.read_csv(uploaded_file, header=None)
+        df = pd.read_csv(uploaded_file)
     else:
-        df = pd.read_excel(uploaded_file, header=None)
+        df = pd.read_excel(uploaded_file)
 
-    numeric = pd.to_numeric(df.values.flatten(), errors="coerce")
-    data = numeric[~np.isnan(numeric)]
+    # ---- Normalize column names (robust to Excel weirdness) ----
+    df.columns = df.columns.astype(str).str.strip().str.lower()
 
+    # ---- Forward-fill Date column (for display only) ----
+    if "date" in df.columns:
+        df["date"] = df["date"].ffill()
+
+    # ---- Fix Batch No. column (Excel float noise → integer IDs) ----
+    if "batch no." in df.columns:
+        df["batch no."] = (
+            pd.to_numeric(df["batch no."], errors="coerce")
+            .round()  # removes 8057.0000000001 type noise
+            .astype("Int64")  # nullable integer (safe with NaN)
+        )
+
+    # ---- Validate required columns ----
+    required_cols = {"mh", "batch no.", "date"}
+    if not required_cols.issubset(df.columns):
+        st.error("Uploaded file must contain columns: MH, Batch No., Date")
+        st.stop()
+
+    # ---- Use ONLY MH values for analysis ----
+    mh_series = pd.to_numeric(df["mh"], errors="coerce")
+    data = mh_series.dropna().values
+
+    # ---- Minimum data check ----
     if len(data) < 25:
-        st.error("At least 25 data points are required.")
+        st.error("At least 25 valid MH data points are required.")
         st.stop()
 
     # ---- User inputs ----
@@ -537,15 +609,17 @@ if uploaded_file is not None:
         f"PPM     {PPM:>7.2f}"
     )
 
+    # ---- Left-side stats (Within) - shifted UP to avoid overlap ----
+    stats_y = y_within + 1.00  # 🔥 SAFE vertical clearance (key line)
+
     ax.text(
-        0.10,
-        0.5,
+        xmin + 0.02 * (xmax - xmin),
+        stats_y,
         left_text,
-        transform=ax.transAxes,
-        va="center",
-        ha="left",  # left-align text
+        va="top",
+        ha="left",
         fontsize=9,
-        family="monospace",  # <-- key line
+        family="monospace",
     )
 
     # ----- Right-side stats (Overall) -----
@@ -558,15 +632,15 @@ if uploaded_file is not None:
         f"PPM     {PPM:>7.2f}"
     )
 
+    # ---- Right-side stats (Overall) - shifted UP ----
     ax.text(
-        0.98,
-        0.5,
+        xmax - 0.02 * (xmax - xmin),
+        stats_y,
         right_text,
-        transform=ax.transAxes,
-        va="center",
-        ha="right",  # anchor block symmetrically
+        va="top",
+        ha="right",
         fontsize=9,
-        family="monospace",  # <-- key line
+        family="monospace",
     )
 
     st.pyplot(fig)
@@ -653,12 +727,12 @@ if uploaded_file is not None:
 
         with PdfPages(tmp.name) as pdf:
 
-            # ----- All plots (NEXT PAGES) -----
+            # ----- All plots -----
             for fig in st.session_state.figures:
                 pdf.savefig(fig, dpi=300)
                 plt.close(fig)
 
-            # ----- Summary page (LAST PAGE) -----
+            # ----- Summary page -----
             summary_fig = create_summary_figure(
                 data=data,
                 mu=mu,
@@ -674,9 +748,15 @@ if uploaded_file is not None:
                 xbar_failed_points=xbar_failed_points,
                 r_failed_points=r_failed_points,
             )
-
             pdf.savefig(summary_fig, dpi=300)
             plt.close(summary_fig)
+
+            # ----- Raw input Excel (LAST PAGE) -----
+            raw_data_figures = create_raw_data_figures(df)
+
+            for fig in raw_data_figures:
+                pdf.savefig(fig, dpi=300)
+                plt.close(fig)
 
         with open(tmp.name, "rb") as f:
             st.download_button(
