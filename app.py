@@ -530,9 +530,11 @@ if uploaded_file is not None:
     #     """
     # )
 
-    if Cpk < 1.0:
+    if Cpk < 1.00:
         st.error(f"Cpk = {Cpk:.2f} → Process NOT capable")
     elif Cpk < 1.33:
         st.warning(f"Cpk = {Cpk:.2f} → Marginal capability")
+    elif Cpk < 1.67:
+        st.info(f"Cpk = {Cpk:.2f} → Capable process")
     else:
-        st.success(f"Cpk = {Cpk:.2f} → Capable process")
+        st.success(f"Cpk = {Cpk:.2f} → Highly capable process")
