@@ -281,14 +281,14 @@ if uploaded_file is not None:
     # --- Spec limit labels (printed ONCE) ---
     y_text = ax.get_ylim()[1] - 0.02 * (ax.get_ylim()[1] - ax.get_ylim()[0])
 
-    dx = 6 / 72  # horizontal shift (points)
+    dx = 3 / 72  # horizontal shift (points)
     left = transforms.ScaledTranslation(-dx, 0, ax.figure.dpi_scale_trans)
     right = transforms.ScaledTranslation(dx, 0, ax.figure.dpi_scale_trans)
 
     ax.text(
         LSL,
         y_text,
-        f"LSL = {LSL:.3f}",
+        f"LSL",
         transform=ax.transData + left,
         color="red",
         ha="right",
@@ -299,7 +299,7 @@ if uploaded_file is not None:
     ax.text(
         USL,
         y_text,
-        f"USL = {USL:.3f}",
+        f"USL",
         transform=ax.transData + right,
         color="red",
         ha="left",
