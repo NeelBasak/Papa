@@ -225,8 +225,8 @@ if uploaded_file is not None:
 
     # ---- User inputs ----
     st.sidebar.header("Specifications")
-    USL = st.sidebar.number_input("USL", value=8.35)
-    LSL = st.sidebar.number_input("LSL", value=6.92)
+    USL = st.sidebar.number_input("USL", value=13.75)
+    LSL = st.sidebar.number_input("LSL", value=11.25)
 
     subgroup_size = 5
     D2 = 2.33
@@ -733,7 +733,7 @@ if uploaded_file is not None:
                 pdf.savefig(fig, dpi=300)
                 plt.close(fig)
 
-            # ----- Summary page -----
+            # ----- Summary page (ONCE) -----
             summary_fig = create_summary_figure(
                 data=data,
                 mu=mu,
@@ -752,7 +752,7 @@ if uploaded_file is not None:
             pdf.savefig(summary_fig, dpi=300)
             plt.close(summary_fig)
 
-            # ----- Raw input Excel (LAST PAGE) -----
+            # ----- Raw input Excel pages (ONCE, LAST) -----
             raw_data_figures = create_raw_data_figures(df)
 
             for fig in raw_data_figures:
