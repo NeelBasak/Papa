@@ -8,7 +8,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import tempfile
 
 
-def create_raw_data_figures(df, rows_per_page=30):
+def create_raw_data_figures(df, rows_per_page=25):
     figures = []
 
     display_df = df.fillna("")
@@ -27,7 +27,7 @@ def create_raw_data_figures(df, rows_per_page=30):
         title = f"Input Data (Uploaded File) — Page {page + 1} of {num_pages}"
         ax.text(
             0.5,
-            0.94,  # 🔧 LOWERED FROM 0.97
+            0.94,
             title,
             ha="center",
             va="top",
@@ -35,7 +35,6 @@ def create_raw_data_figures(df, rows_per_page=30):
             fontweight="bold",
         )
 
-        # ---- Table placed BELOW title (not centered) ----
         # ---- Pretty column headers for display ----
         display_columns = ["MH", "Batch No.", "Date"]
 
