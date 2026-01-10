@@ -68,8 +68,8 @@ def create_summary_figure(
     PPM,
     LSL,
     USL,
-    # xbar_failed_points,
-    # r_failed_points,
+    xbar_failed_points,
+    r_failed_points,
 ):
 
     fig, ax = plt.subplots(figsize=(8.27, 11.69))  # A4 portrait
@@ -98,19 +98,19 @@ def create_summary_figure(
 
     # ---- Control chart test results ----
 
-    # if xbar_failed_points:
-    #     xbar_test = "X̄ Chart (Test 1):\n" "Failed at subgroups: " + ", ".join(
-    #         map(str, xbar_failed_points)
-    #     )
-    # else:
-    #     xbar_test = "X̄ Chart (Test 1): PASSED"
+    if xbar_failed_points:
+        xbar_test = "X̄ Chart (Test 1):\n" "Failed at subgroups: " + ", ".join(
+            map(str, xbar_failed_points)
+        )
+    else:
+        xbar_test = "X̄ Chart (Test 1): PASSED"
 
-    # if r_failed_points:
-    #     r_test = "R̄ Chart (Test 1):\n" "Failed at subgroups: " + ", ".join(
-    #         map(str, r_failed_points)
-    #     )
-    # else:
-    #     r_test = "R̄ Chart (Test 1): PASSED"
+    if r_failed_points:
+        r_test = "R̄ Chart (Test 1):\n" "Failed at subgroups: " + ", ".join(
+            map(str, r_failed_points)
+        )
+    else:
+        r_test = "R̄ Chart (Test 1): PASSED"
 
     # Summary text
     summary_text = (
@@ -124,11 +124,11 @@ def create_summary_figure(
         f"Pp                  : {Pp:.3f}\n"
         f"Ppk                 : {Ppk:.3f}\n"
         f"PPM (Overall)       : {PPM:.1f}\n\n"
-        # "CONTROL CHART TEST RESULTS\n"
-        # "---------------------------\n"
-        # f"{xbar_test}\n\n"
-        # f"{r_test}\n\n"
-        # f"CONCLUSION          : {verdict}"
+        "CONTROL CHART TEST RESULTS\n"
+        "---------------------------\n"
+        f"{xbar_test}\n\n"
+        f"{r_test}\n\n"
+        f"CONCLUSION          : {verdict}"
     )
 
     ax.text(
@@ -258,125 +258,125 @@ if uploaded_file is not None:
     st.session_state.figures.clear()
 
     # ----- Xbar Chart -----
-    # st.subheader("X̄ Chart")
+    st.subheader("X̄ Chart")
 
-    # fig, ax = plt.subplots(figsize=(9, 5))
+    fig, ax = plt.subplots(figsize=(9, 5))
 
-    # A2 = 0.577
-    # sigma_xbar = sigma_within / np.sqrt(subgroup_size)
-    # center_line = xbar.mean()
+    A2 = 0.577
+    sigma_xbar = sigma_within / np.sqrt(subgroup_size)
+    center_line = xbar.mean()
 
-    # UCL_xbar = center_line + 3 * sigma_xbar
-    # LCL_xbar = center_line - 3 * sigma_xbar
+    UCL_xbar = center_line + 3 * sigma_xbar
+    LCL_xbar = center_line - 3 * sigma_xbar
 
     # # Convert to numpy for masking
-    # xbar_vals = np.array(xbar)
-    # idx = np.arange(len(xbar_vals))
+    xbar_vals = np.array(xbar)
+    idx = np.arange(len(xbar_vals))
 
     # # Mask for out-of-control points
-    # out_of_control = (xbar_vals > UCL_xbar) | (xbar_vals < LCL_xbar)
+    out_of_control = (xbar_vals > UCL_xbar) | (xbar_vals < LCL_xbar)
 
-    # # Plot all points (normal)
-    # ax.plot(idx, xbar_vals, marker="o", linewidth=2, label="X̄")
+    # Plot all points (normal)
+    ax.plot(idx, xbar_vals, marker="o", linewidth=2, label="X̄")
 
-    # # Highlight out-of-control points
-    # ax.scatter(
-    #     idx[out_of_control],
-    #     xbar_vals[out_of_control],
-    #     color="red",
-    #     marker="s",
-    #     s=80,
-    #     label="Out of Control",
-    # )
+    # Highlight out-of-control points
+    ax.scatter(
+        idx[out_of_control],
+        xbar_vals[out_of_control],
+        color="red",
+        marker="s",
+        s=80,
+        label="Out of Control",
+    )
 
-    # # Control limits
-    # ax.axhline(center_line, linestyle="--", linewidth=1.5, label="CL")
-    # ax.axhline(UCL_xbar, linestyle="--", linewidth=1.5, label="UCL")
-    # ax.axhline(LCL_xbar, linestyle="--", linewidth=1.5, label="LCL")
+    # Control limits
+    ax.axhline(center_line, linestyle="--", linewidth=1.5, label="CL")
+    ax.axhline(UCL_xbar, linestyle="--", linewidth=1.5, label="UCL")
+    ax.axhline(LCL_xbar, linestyle="--", linewidth=1.5, label="LCL")
 
-    # # Spec limits
-    # ax.axhline(USL, linestyle=":", linewidth=2, label="USL")
-    # ax.axhline(LSL, linestyle=":", linewidth=2, label="LSL")
+    # Spec limits
+    ax.axhline(USL, linestyle=":", linewidth=2, label="USL")
+    ax.axhline(LSL, linestyle=":", linewidth=2, label="LSL")
 
-    # # ---- Tidy labels on right ----
-    # x_text = len(xbar_vals) - 1
-    # offset = 0.010
+    # ---- Tidy labels on right ----
+    x_text = len(xbar_vals) - 1
+    offset = 0.010
 
-    # ax.text(x_text, UCL_xbar + offset, f"UCL = {UCL_xbar:.3f}", va="bottom")
-    # ax.text(x_text, center_line + offset, f"CL = {center_line:.3f}", va="bottom")
-    # ax.text(x_text, LCL_xbar - offset, f"LCL = {LCL_xbar:.3f}", va="top")
-    # ax.text(x_text, USL + offset, f"USL = {USL:.3f}", va="bottom")
-    # ax.text(x_text, LSL - offset, f"LSL = {LSL:.3f}", va="top")
+    ax.text(x_text, UCL_xbar + offset, f"UCL = {UCL_xbar:.3f}", va="bottom")
+    ax.text(x_text, center_line + offset, f"CL = {center_line:.3f}", va="bottom")
+    ax.text(x_text, LCL_xbar - offset, f"LCL = {LCL_xbar:.3f}", va="top")
+    ax.text(x_text, USL + offset, f"USL = {USL:.3f}", va="bottom")
+    ax.text(x_text, LSL - offset, f"LSL = {LSL:.3f}", va="top")
 
-    # # Layout
-    # ax.set_xlabel("Subgroup")
-    # ax.set_ylabel("Sample Mean")
-    # ax.set_xlim(-0.5, len(xbar_vals) + 3)
-    # ax.grid(alpha=0.3)
-    # # ax.legend(loc="lower left")
-    # ax.set_title("X_bar Chart", fontsize=13, fontweight="bold")
+    # Layout
+    ax.set_xlabel("Subgroup")
+    ax.set_ylabel("Sample Mean")
+    ax.set_xlim(-0.5, len(xbar_vals) + 3)
+    ax.grid(alpha=0.3)
+    # ax.legend(loc="lower left")
+    ax.set_title("X_bar Chart", fontsize=13, fontweight="bold")
 
-    # st.pyplot(fig)
-    # st.session_state.figures.append(fig)
+    st.pyplot(fig)
+    st.session_state.figures.append(fig)
 
-    # # Test 1: One point beyond 3 sigma (UCL/LCL)
-    # xbar_failed_points = (idx[out_of_control] + 1).tolist()  # +1 for 1-based indexing
+    # Test 1: One point beyond 3 sigma (UCL/LCL)
+    xbar_failed_points = (idx[out_of_control] + 1).tolist()  # +1 for 1-based indexing
 
     # ----- 3. R Chart -----
-    # st.subheader("R̄ Chart")
+    st.subheader("R̄ Chart")
 
-    # D4 = 2.114
-    # D3 = 0.0
+    D4 = 2.114
+    D3 = 0.0
 
-    # UCL_R = R_bar * D4
-    # LCL_R = R_bar * D3
+    UCL_R = R_bar * D4
+    LCL_R = R_bar * D3
 
-    # R_vals = np.array(R)
-    # idx_R = np.arange(len(R_vals))
+    R_vals = np.array(R)
+    idx_R = np.arange(len(R_vals))
 
-    # out_of_control_R = (R_vals > UCL_R) | (R_vals < LCL_R)
+    out_of_control_R = (R_vals > UCL_R) | (R_vals < LCL_R)
 
-    # fig, ax = plt.subplots(figsize=(9, 5))
+    fig, ax = plt.subplots(figsize=(9, 5))
 
-    # # Plot R values
-    # ax.plot(idx_R, R_vals, marker="o", linewidth=2)
+    # Plot R values
+    ax.plot(idx_R, R_vals, marker="o", linewidth=2)
 
-    # # Highlight out-of-control points
-    # ax.scatter(
-    #     idx_R[out_of_control_R],
-    #     R_vals[out_of_control_R],
-    #     color="red",
-    #     marker="s",
-    #     s=80,
-    # )
+    # Highlight out-of-control points
+    ax.scatter(
+        idx_R[out_of_control_R],
+        R_vals[out_of_control_R],
+        color="red",
+        marker="s",
+        s=80,
+    )
 
-    # # Control limits
-    # ax.axhline(R_bar, linestyle="--", linewidth=1.5)
-    # ax.axhline(UCL_R, linestyle="--", linewidth=1.5)
-    # ax.axhline(LCL_R, linestyle="--", linewidth=1.5)
+    # Control limits
+    ax.axhline(R_bar, linestyle="--", linewidth=1.5)
+    ax.axhline(UCL_R, linestyle="--", linewidth=1.5)
+    ax.axhline(LCL_R, linestyle="--", linewidth=1.5)
 
-    # # ---- Tidy labels on right (same style as X̄) ----
-    # x_text = len(R_vals) + 0.5
-    # offset = 0.015 * max(R_vals)  # scale offset to data
+    # ---- Tidy labels on right (same style as X̄) ----
+    x_text = len(R_vals) + 0.5
+    offset = 0.015 * max(R_vals)  # scale offset to data
 
-    # x_shift = 1.9
-    # ax.text(x_text - x_shift, UCL_R + offset, f"UCL = {UCL_R:.3f}", va="bottom")
-    # ax.text(x_text - x_shift, R_bar + offset, f"R_bar = {R_bar:.3f}", va="bottom")
-    # ax.text(x_text - x_shift, LCL_R + offset, f"LCL = {LCL_R:.3f}", va="bottom")
+    x_shift = 1.9
+    ax.text(x_text - x_shift, UCL_R + offset, f"UCL = {UCL_R:.3f}", va="bottom")
+    ax.text(x_text - x_shift, R_bar + offset, f"R_bar = {R_bar:.3f}", va="bottom")
+    ax.text(x_text - x_shift, LCL_R + offset, f"LCL = {LCL_R:.3f}", va="bottom")
 
-    # # Layout
-    # ax.set_xlabel("Subgroup")
-    # ax.set_ylabel("Sample Range")
-    # ax.set_xlim(-0.5, len(R_vals) + 3)
-    # ax.grid(alpha=0.3)
+    # Layout
+    ax.set_xlabel("Subgroup")
+    ax.set_ylabel("Sample Range")
+    ax.set_xlim(-0.5, len(R_vals) + 3)
+    ax.grid(alpha=0.3)
 
-    # ax.set_title("R_bar Chart", fontsize=13, fontweight="bold")
+    ax.set_title("R_bar Chart", fontsize=13, fontweight="bold")
 
-    # st.pyplot(fig)
-    # st.session_state.figures.append(fig)
+    st.pyplot(fig)
+    st.session_state.figures.append(fig)
 
-    # # Store R-chart test failures (1-based indexing)
-    # r_failed_points = (idx_R[out_of_control_R] + 1).tolist()
+    # Store R-chart test failures (1-based indexing)
+    r_failed_points = (idx_R[out_of_control_R] + 1).tolist()
 
     # ----- Last 25 Subgroups (Individual Values) -----
     st.subheader("Last 25 Subgroups")
@@ -649,35 +649,35 @@ if uploaded_file is not None:
     # Test Results
 
     # ----- Xbar Chart Test Results -----
-    # st.markdown("### Test Results for X̄ Chart of C1")
-    # if xbar_failed_points:
-    #     st.info(
-    #         f"""
-    #         **TEST 1.** One point more than 3.00 standard deviations from center line.
+    st.markdown("### Test Results for X̄ Chart of C1")
+    if xbar_failed_points:
+        st.info(
+            f"""
+            **TEST 1.** One point more than 3.00 standard deviations from center line.
 
-    #         **Test Failed at points:** {', '.join(map(str, xbar_failed_points))}
-    #         """
-    #     )
-    # else:
-    #     st.success(
-    #         "**TEST 1 PASSED.** One point more than 3.00 standard deviations from center line."
-    #     )
+            **Test Failed at points:** {', '.join(map(str, xbar_failed_points))}
+            """
+        )
+    else:
+        st.success(
+            "**TEST 1 PASSED.** One point more than 3.00 standard deviations from center line."
+        )
 
-    # # ----- R Chart Test Results -----
-    # st.subheader("Test Results for R Chart of C1")
+    # ----- R Chart Test Results -----
+    st.subheader("Test Results for R Chart of C1")
 
-    # if r_failed_points:
-    #     st.info(
-    #         f"""
-    #         **TEST 1.** One point more than 3.00 standard deviations from center line.
+    if r_failed_points:
+        st.info(
+            f"""
+            **TEST 1.** One point more than 3.00 standard deviations from center line.
 
-    #         **Test Failed at points:** {', '.join(map(str, r_failed_points))}
-    #         """
-    #     )
-    # else:
-    #     st.success(
-    #         "**TEST 1 PASSED.** One point more than 3.00 standard deviations from center line."
-    #     )
+            **Test Failed at points:** {', '.join(map(str, r_failed_points))}
+            """
+        )
+    else:
+        st.success(
+            "**TEST 1 PASSED.** One point more than 3.00 standard deviations from center line."
+        )
 
     Cp = (USL - LSL) / (6 * sigma_within)
 
@@ -746,8 +746,8 @@ if uploaded_file is not None:
                 PPM=PPM,
                 LSL=LSL,
                 USL=USL,
-                # xbar_failed_points=xbar_failed_points,
-                # r_failed_points=r_failed_points,
+                xbar_failed_points=xbar_failed_points,
+                r_failed_points=r_failed_points,
             )
             pdf.savefig(summary_fig, dpi=300)
             plt.close(summary_fig)
